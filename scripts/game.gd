@@ -21,10 +21,15 @@ func _ready():
 	values["node"].name = "Pieces"
 	add_child(values["node"])
 
+
+#setting mouse input to false
+var touchbool = true
+
 func _unhandled_input(event):
 	if state: return # if the state is not RUNNING, then return
 	
-	if event.is_action_pressed("left_click"):
+	
+	if event.is_action_pressed("left_click") and touchbool == true:
 		var pos := get_tile_pos()
 
 		if moves.has(pos):
@@ -33,8 +38,18 @@ func _unhandled_input(event):
 			show_moves(pos)
 
 		$Board.queue_redraw()
-	if event.is_action_pressed("ui_accept"):
+	if event.is_action_pressed("ui_accept") and touchbool == true:
 		flip_board()
+		
+	if event.is_action_pressed("ui_cancel"):
+		$Vbox_PauseMenu.visible = true
+		touchbool = false
+		
+		
+
+
+
+
 
 func flip_board():
 	rotate(PI)
@@ -193,3 +208,12 @@ func make_move(pos: Vector2i):
 		
 	if is_in_check():
 		print("Check!")
+
+
+func _on_button_resume_pressed() -> void:
+		touchbool = true
+		$Vbox_PauseMenu.visible = false
+		
+
+func _on_button_quit_pressed() -> void:
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
