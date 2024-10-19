@@ -11,8 +11,21 @@ const L_SHAPE = [[ 2,  1], [ 1,  2], [-1,  2], [-2,  1],
 
 static func not_in_range(x, y): return x < 0 or x > 7 or y < 0 or y > 7
 
-static func new_move() -> Dictionary:
-	return {"type": MOVE}
+static func new_move(isValid: bool = true, isExtra: bool = false) -> Dictionary:
+	if isValid and isExtra:
+		return new_valid_extra_move()
+	if isExtra:
+		return new_invalid_extra_move()
+	return new_valid_move()
+	
+static func new_valid_move() -> Dictionary:
+	return {"type": MOVE, "valid_move": 1, "extra_move": 0}
+
+static func new_valid_extra_move() -> Dictionary:
+	return {"type": MOVE, "valid_move": 1, "extra_move": 1}
+
+static func new_invalid_extra_move() -> Dictionary:
+	return {"type": MOVE, "valid_move": 0, "extra_move": 1}
 
 static func new_capture(take_piece) -> Dictionary:
 	return {"type": CAPTURE, "take_piece": take_piece}
@@ -20,7 +33,7 @@ static func new_capture(take_piece) -> Dictionary:
 static func new_castle(side) -> Dictionary:
 	return {"type": CASTLE, "side": side}
 
-static func basic(pos: Vector2i, board: Array, directions: Array) -> Dictionary:
+static func basic(pos: Vector2i, board: Array, directions: Array, isValid: bool = true, isExtra: bool = false) -> Dictionary:
 	var moves := {}
 	
 	var color = board[pos.y][pos.x].team
@@ -35,7 +48,7 @@ static func basic(pos: Vector2i, board: Array, directions: Array) -> Dictionary:
 		var tile = board[y][x]
 		
 		if !tile:
-			moves[Vector2i(x, y)] = new_move()
+			moves[Vector2i(x, y)] = new_move(isValid, isExtra)
 		elif color != tile.team:
 			moves[Vector2i(x, y)] = new_capture(tile)
 
@@ -67,15 +80,22 @@ static func line(pos: Vector2i, board: Array, directions: Array) -> Dictionary:
 
 	return moves
 
-static func pawn(pos: Vector2i, board: Array, round_num: int) -> Dictionary:
+static func pawn(pos: Vector2i, board: Array, round_num: int, directions: Array) -> Dictionary:
+	var extra_valid_moves := basic(pos, board, Moves.OCTO, true, true)
+	var extra_invalid_moves := basic(pos, board, [[2, 0], [-2, 0], [0, 2], [0, -2]], false, true)
 	var moves := {}
-
+	moves.merge(extra_valid_moves)
+	moves.merge(extra_invalid_moves)
+	
 	var pawn_piece = board[pos.y][pos.x]
 	var pawn_color = pawn_piece.team
 	
 	var move_dir := 1 if pawn_color == "black" else -1
 	var original_rank := 1 if pawn_color == "black" else 6
 	
+	var color = board[pos.y][pos.x].team
+	
+			
 	# Move
 	var possible_moves := [Vector2i(0, move_dir)]
 	
@@ -86,7 +106,7 @@ static func pawn(pos: Vector2i, board: Array, round_num: int) -> Dictionary:
 		if board[pos.y + move.y][pos.x]:
 			break
 			
-		moves[pos + move] = new_move()
+		moves[pos + move] = new_valid_move()
 	
 	# Attack
 	for attack_dir in [-1, 1]:

@@ -23,6 +23,7 @@ var piece_id := PAWN:
 var pos: Vector2i # Position in the board array, not screen
 
 func _ready():
+	
 	if team == "black":
 		texture = preload("res://assets/black.png")
 	
@@ -47,7 +48,7 @@ func move_animation(new_pos: Vector2i):
 
 func get_moves(board: Array) -> Dictionary:
 	match piece_id:
-		PAWN: return Moves.pawn(pos, board, game.round_num)
+		PAWN: return Moves.pawn(pos, board, game.round_num, Moves.OCTO)
 		KNIGHT: return Moves.basic(pos, board, Moves.L_SHAPE)
 		BISHOP: return Moves.line(pos, board, Moves.DIAGONAL)
 		ROOK: return Moves.line(pos, board, Moves.ORTHOGONAL)
