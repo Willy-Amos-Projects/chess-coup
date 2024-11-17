@@ -11,7 +11,7 @@ func _draw():
 		
 		match moves[move].type:
 			Moves.MOVE:
-				draw_circle(pos, tile_size/8, Color("000", 0.5))
+				draw_circle(pos, tile_size/8, Color(255 * moves[move].extra_move, 255 * moves[move].valid_move, 0, 0.5))
 			Moves.CAPTURE:
 				draw_arc(pos, tile_size/2.5, 0, TAU, 16, Color("000", 0.7), 1)
 			Moves.CASTLE:
